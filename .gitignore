@@ -3,12 +3,14 @@
 .env.*
 !.env.example
 
-# Data, checkpoints, run artefacts — never committed
-data/
-outputs/
-runs/
-checkpoints/
-adapters/
+# Data, checkpoints, run artefacts — never committed.
+# Leading slash anchors these to the repo root: an unanchored `data/` also
+# matches src/docfit/data/, which silently excludes a source package.
+/data/
+/outputs/
+/runs/
+/checkpoints/
+/adapters/
 *.safetensors
 *.bin
 *.parquet
