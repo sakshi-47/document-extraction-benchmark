@@ -1,0 +1,25 @@
+# Five-minute validation run. Prove the loop works end to end before spending
+# Kaggle quota on the real thing: a diverged run discovered at hour three is a
+# wasted afternoon and a chunk of a weekly allowance.
+name: smoke
+base_model: Qwen/Qwen2-VL-2B-Instruct
+seed: 42
+
+max_steps: 20
+batch_size: 1
+grad_accum_steps: 2
+learning_rate: 1.0e-4
+max_image_pixels: 262144   # 512x512, small enough to be fast
+
+load_in_4bit: true
+gradient_checkpointing: true
+precision: auto            # float16 on Kaggle's P100/T4; see docfit.hardware
+
+lora:
+  r: 8
+  alpha: 16
+  dropout: 0.05
+
+checkpoint:
+  every_steps: 10
+  push_to_hub: false
