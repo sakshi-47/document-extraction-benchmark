@@ -1,0 +1,36 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Data, checkpoints, run artefacts — never committed
+data/
+outputs/
+runs/
+checkpoints/
+adapters/
+*.safetensors
+*.bin
+*.parquet
+
+# Notebook outputs. An .ipynb preserves cell output, so a token printed once
+# survives into every future commit. Strip before staging: see CONTRIBUTING.
+notebooks/**/*.nbconvert.ipynb
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
