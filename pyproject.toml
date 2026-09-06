@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "docfail"
+name = "docbench"
 version = "0.1.0"
-description = "Failure-mode analysis of document field extraction under real-world image degradation"
+description = "How document field extraction fails, what accuracy costs, and what it costs to serve"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -22,22 +22,35 @@ dependencies = [
     "diskcache>=5.6",
     "typer>=0.12",
     "rich>=13.7",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
+# Heavy ML stack is optional so CI stays fast and the metric and measurement
+# layers stay importable on a machine with no GPU and no torch.
+train = [
+    "torch>=2.3",
+    "transformers>=4.44",
+    "peft>=0.12",
+    "bitsandbytes>=0.43",
+    "accelerate>=0.33",
+    "datasets>=2.20",
+    "huggingface-hub>=0.24",
+]
 dev = [
     "pytest>=8.2",
     "pytest-cov>=5.0",
     "ruff>=0.5",
     "mypy>=1.10",
     "pip-audit>=2.7",
+    "import-linter>=2.0",
 ]
 
 [project.scripts]
-docfail = "docfail.cli:app"
+docbench = "docbench.cli:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/docfail"]
+packages = ["src/docbench"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -53,4 +66,4 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 [tool.mypy]
 python_version = "3.11"
 strict = true
-files = ["src/docfail"]
+files = ["src/docbench"]

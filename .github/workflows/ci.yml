@@ -33,15 +33,29 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Import smoke test
-        # The prior work shipped four experiment scripts that all raised
-        # ImportError on a clean checkout, because a config constant was
-        # deleted during cleanup and nothing ever re-imported them. This step
-        # is nine seconds and makes that failure impossible.
+        # Four experiment scripts in the prior work this project builds on all
+        # raised ImportError on a clean checkout, because a config constant was
+        # deleted during cleanup and nothing re-imported them. Nine seconds
+        # makes that class of failure impossible.
         run: |
-          python -c "import docfail, docfail.settings, docfail.types"
-          python -c "import docfail.metrics as m; print(sorted(m.__all__))"
-          python -c "import docfail.cli"
+          python -c "import docbench, docbench.settings, docbench.types"
+          python -c "import docbench.hardware, docbench.auth, docbench.cli"
+          python -c "import docbench.metrics as m; print(sorted(m.__all__))"
+          python -c "import docbench.bench as b; print(sorted(b.__all__))"
+          python -c "import docbench.data as d; print(sorted(d.__all__))"
+          python -c "import docbench.systems, docbench.train.loop"
+          python -c "import docbench.datasets.base, docbench.degrade.transforms"
           python scripts/download_data.py --help > /dev/null
+
+      - name: Shipped configs must validate
+        run: |
+          python -m docbench.cli validate configs/smoke.yaml
+          python -m docbench.cli validate configs/qwen2vl_lora.yaml
+
+      - name: Architecture contract
+        # metrics + types must stay a standalone, reusable evaluation library.
+        # Enforced rather than asserted: see .importlinter.
+        run: lint-imports
 
       - name: Lint
         run: ruff check src tests scripts
@@ -50,10 +64,37 @@ jobs:
         run: ruff format --check src tests scripts
 
       - name: Types
-        run: mypy || true   # advisory until the extractor layer lands
+        run: mypy || true   # advisory until the extraction backends land
 
       - name: Tests
-        run: pytest --cov=docfail --cov-report=term-missing
+        run: pytest --cov=docbench --cov-report=term-missing
+
+  notebook-hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # An .ipynb keeps its cell outputs, so a token printed once stays in the
+      # file and in every later commit. Fail the build rather than trust a
+      # reviewer to spot it.
+      - name: Reject committed notebook outputs
+        run: |
+          python - <<'PY'
+          import json, pathlib, sys
+          bad = []
+          for nb in pathlib.Path("notebooks").rglob("*.ipynb"):
+              doc = json.loads(nb.read_text())
+              for i, cell in enumerate(doc.get("cells", [])):
+                  if cell.get("outputs") or cell.get("execution_count"):
+                      bad.append(f"{nb}: cell {i}")
+          if bad:
+              print("Notebooks must be committed with outputs cleared:")
+              print("\n".join(bad))
+              sys.exit(1)
+          print("notebook outputs clean")
+          PY
 
   audit:
     runs-on: ubuntu-latest

@@ -18,8 +18,8 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from docfail.metrics.normalize import canonicalize
-from docfail.types import (
+from docbench.metrics.normalize import canonicalize
+from docbench.types import (
     FieldOutcome,
     FieldPrediction,
     FieldSpec,

@@ -13,7 +13,7 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict
 
-from docfail.types import FieldSpec
+from docbench.types import FieldSpec
 
 
 class Document(BaseModel):

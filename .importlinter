@@ -1,0 +1,29 @@
+# The metrics layer is a standalone, reusable evaluation library that happens to
+# live in this repository. Nothing enforces that by itself -- a single stray
+# import would quietly couple it to the study code and it would stop being
+# reusable without anyone noticing.
+#
+# This contract makes the boundary checkable rather than claimed. It runs in CI.
+# If it ever needs to be relaxed, that is a deliberate decision with a diff
+# attached, not an accident.
+
+[importlinter]
+root_package = docbench
+
+[importlinter:contract:metrics-is-standalone]
+name = metrics + types depend on nothing else in docbench
+type = forbidden
+source_modules =
+    docbench.metrics
+    docbench.types
+forbidden_modules =
+    docbench.auth
+    docbench.bench
+    docbench.cli
+    docbench.data
+    docbench.datasets
+    docbench.degrade
+    docbench.hardware
+    docbench.settings
+    docbench.systems
+    docbench.train

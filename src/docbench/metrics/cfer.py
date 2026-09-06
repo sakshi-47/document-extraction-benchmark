@@ -27,7 +27,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from docfail.types import Criticality, FieldOutcome, MatchStatus
+from docbench.types import Criticality, FieldOutcome, MatchStatus
 
 #: How much each field class matters to the verification decision.
 CRITICALITY_WEIGHTS: dict[Criticality, float] = {

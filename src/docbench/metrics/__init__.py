@@ -1,14 +1,14 @@
 """Evaluation metrics for document field extraction."""
 
-from docfail.metrics.cfer import (
+from docbench.metrics.cfer import (
     ErrorProfile,
     bootstrap_ci,
     critical_field_error_rate,
     error_profile,
     silent_failure_rate,
 )
-from docfail.metrics.fields import score_document, score_field
-from docfail.metrics.normalize import canonicalize
+from docbench.metrics.fields import score_document, score_field
+from docbench.metrics.normalize import canonicalize
 
 __all__ = [
     "ErrorProfile",

@@ -1,0 +1,27 @@
+# The real run. Sized for a single 16GB Kaggle GPU inside one session.
+name: qwen2vl-2b-lora-cord
+base_model: Qwen/Qwen2-VL-2B-Instruct
+seed: 42
+
+max_steps: 2000
+batch_size: 1
+grad_accum_steps: 8        # effective batch 8; image tokens dominate memory
+learning_rate: 1.0e-4
+warmup_ratio: 0.03
+max_image_pixels: 589824   # 768x768
+
+load_in_4bit: true
+gradient_checkpointing: true
+precision: auto
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"]
+
+checkpoint:
+  every_steps: 250
+  push_to_hub: true
+  hub_repo_id: sakshi-47/qwen2vl-2b-lora-cord   # adapter weights, ~40MB
+  keep_last: 3

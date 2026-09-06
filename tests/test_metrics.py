@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from docfail.metrics import (
+from docbench.metrics import (
     bootstrap_ci,
     canonicalize,
     critical_field_error_rate,
@@ -19,7 +19,7 @@ from docfail.metrics import (
     score_field,
     silent_failure_rate,
 )
-from docfail.types import (
+from docbench.types import (
     Criticality,
     FieldKind,
     FieldOutcome,

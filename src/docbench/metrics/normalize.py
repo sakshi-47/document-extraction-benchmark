@@ -21,7 +21,7 @@ from datetime import date
 
 from dateutil import parser as date_parser
 
-from docfail.types import FieldKind
+from docbench.types import FieldKind
 
 # Bound input length before any regex work. These values come from model
 # output, which is untrusted; unbounded input into repeated regex passes is a
