@@ -1,9 +1,9 @@
 """Tests for the scoring layer.
 
-The first test class is the reason this file exists. The prior work published
-nine tables of F1 scores computed against single characters because a scorer
-took a sequence and every call site handed it a bare string. One test would
-have caught it.
+The first test class is the reason this file exists. A scorer that takes a
+sequence of accepted answers will silently iterate a bare string as characters,
+scoring "Yes" against 'Y', 'e', 's'. Nothing raises and every resulting number
+is meaningless. One test catches it.
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ def outcome(status: MatchStatus, criticality=Criticality.CRITICAL, **kw) -> Fiel
 
 
 class TestBareStringGuard:
-    """Regression tests for the character-iteration bug in the prior work."""
+    """Regression tests for the bare-string character-iteration hazard."""
 
     def test_bare_str_gold_is_rejected(self):
         with pytest.raises(TypeError, match="not a bare str"):

@@ -33,10 +33,10 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Import smoke test
-        # Four experiment scripts in the prior work this project builds on all
-        # raised ImportError on a clean checkout, because a config constant was
-        # deleted during cleanup and nothing re-imported them. Nine seconds
-        # makes that class of failure impossible.
+        # A deleted config constant is enough to make every entry point raise
+        # ImportError on a clean checkout while still passing locally, where the
+        # stale module is already imported. Nine seconds makes that class of
+        # failure impossible.
         run: |
           python -c "import docbench, docbench.settings, docbench.types"
           python -c "import docbench.hardware, docbench.auth, docbench.cli"

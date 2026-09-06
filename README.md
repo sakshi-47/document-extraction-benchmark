@@ -99,20 +99,9 @@ The ML stack is an optional extra (`pip install -e ".[train]"`), so the metric a
 | 5 | LoRA fine-tune on Kaggle → cost/accuracy/latency frontier | |
 | 6 | Serving: quantization, load test, $/1k docs, silent-failure regression | |
 
-## Prior work
-
-The framing owes a debt to [svpathak/rag-failure-modes](https://github.com/svpathak/rag-failure-modes), which asks the analogous question of retrieval-augmented generation: it introduces an Evidence Coverage Score to catch answers that look faithful but were generated from the wrong retrieved context. The silent-failure quadrant here is the same idea moved from retrieval to extraction, and its Caveats section is a model worth copying.
-
-Two things in that repository shaped decisions here rather than being inherited from it:
-
-- Its scorer takes a sequence of accepted answers, and every call site passes a single string. Iterating a string yields characters, so `"Yes"` is scored against `'Y'`, `'e'`, `'s'`. Nothing raises. All nine rows of its published F1 table are token overlap against single characters. [`metrics/fields.py`](src/docbench/metrics/fields.py) rejects a bare `str` at runtime for exactly this reason — a `str` satisfies `Sequence[str]`, so no type checker catches it — and `TestBareStringGuard` is the regression test.
-- Its four experiment scripts all raise `ImportError` on a clean checkout, because a constant was removed from its config during cleanup and nothing re-imported them. CI here runs an import smoke test on every push.
-
-Neither observation diminishes the original idea, which is a good one. They are why this is an independent implementation rather than a fork.
-
 ## Caveats
 
-Kept deliberately, in the spirit of that prior work, and updated as the project grows:
+Kept deliberately, and updated as the project grows:
 
 - No experimental results exist yet. The metrics are tested against constructed cases, not validated against human judgement on real extractions.
 - Severity and criticality weights (`1.0 / 0.3 / 0.05`) are reasoned, not calibrated. They encode a claim about verification economics that a cost model should eventually replace. Results should be reported as sensitive to them.

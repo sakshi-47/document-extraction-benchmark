@@ -2,12 +2,11 @@
 
 Design note -- why `gold` is typed as a Sequence and a bare `str` is rejected:
 
-The prior work this project builds on (see README, Prior work) published nine
-tables of F1 scores that were silently computed against single characters. Its
-scorer took a list of acceptable answers and iterated it; every call site
-passed one answer as a plain string. Iterating a string yields characters, so
-"Yes" was scored as 'Y', 'e', 's'. Nothing raised, nothing looked wrong, and
-every published number was meaningless.
+A scorer that accepts several acceptable answers and iterates them has a
+failure mode that is silent and total. Pass one answer as a plain string
+instead of a one-element sequence, and iteration yields characters: "Yes" is
+scored against 'Y', 'e', 's'. Nothing raises, no output looks malformed, and
+every number the scorer produces is meaningless.
 
 A str IS a valid Sequence[str], so type checkers do not catch this. The runtime
 guard below does. It is three lines and it is the reason this module can be
