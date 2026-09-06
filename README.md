@@ -2,7 +2,7 @@
 
 How document field extraction fails, what accuracy costs, and what it costs to serve — measured end to end on one corpus with one metric.
 
-> **Status: milestones 1–2 of 6 complete.** The scoring and measurement layers are implemented and tested (115 tests, CI green). No models have been trained and **no results exist yet**. This README will not report a number until one has been measured. See [Roadmap](#roadmap).
+> **Status: milestones 1–2 of 6 complete.** The scoring and measurement layers are implemented and tested (30 tests, CI green). No models have been trained and **no results exist yet**. This README will not report a number until one has been measured. See [Roadmap](#roadmap).
 
 ---
 
