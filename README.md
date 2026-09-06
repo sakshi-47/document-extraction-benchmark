@@ -2,7 +2,7 @@
 
 How document field extraction fails, what accuracy costs, and what it costs to serve — measured end to end on one corpus with one metric.
 
-> **Status: milestones 1–2 of 6 complete.** The scoring and measurement layers are implemented and tested (109 tests, CI green). No models have been trained and **no results exist yet**. This README will not report a number until one has been measured. See [Roadmap](#roadmap).
+> **Status: milestones 1–2 of 6 complete.** The scoring and measurement layers are implemented and tested (115 tests, CI green). No models have been trained and **no results exist yet**. This README will not report a number until one has been measured. See [Roadmap](#roadmap).
 
 ---
 
@@ -65,7 +65,7 @@ src/docbench/
 
 Constraints that shaped the code rather than being worked around:
 
-- **Kaggle's P100 and T4 are pre-Ampere, so `bfloat16` is unavailable.** [`hardware.py`](src/docbench/hardware.py) derives precision from the detected device and configures `float16` with gradient scaling. An explicit `bfloat16` on such a card raises with an explanation instead of silently downcasting.
+- **Pick the T4, not the P100.** Both are pre-Ampere so `bfloat16` is unavailable either way, but bitsandbytes 4-bit targets compute capability 7.5 and up — Turing and newer. The P100 is 6.0, so a QLoRA run cannot use it despite its better memory bandwidth. [`hardware.py`](src/docbench/hardware.py) derives precision and 4-bit capability from the detected device; a `bfloat16` or `load_in_4bit` config the hardware cannot honour raises before the model downloads rather than failing mid-run.
 - **Sessions get killed.** Checkpoints push adapters to the HF Hub every N steps, because `/kaggle/working` does not survive between sessions. An interrupted run resumes with `--resume`.
 - **Quota is finite.** [`configs/smoke.yaml`](configs/smoke.yaml) runs the full loop on 20 samples in about five minutes.
 - **Notebooks leak tokens.** `.ipynb` files preserve cell outputs, so a token printed once persists into every later commit. Tokens are read from Kaggle Secrets via [`auth.py`](src/docbench/auth.py) and wrapped so `repr`, `str` and f-strings all render redacted. CI fails the build if any committed notebook contains outputs.

@@ -1,4 +1,6 @@
-# The real run. Sized for a single 16GB Kaggle GPU inside one session.
+# The real run. Sized for a single 16GB Kaggle T4 inside one session.
+# Requires the T4 accelerator, not the P100: load_in_4bit goes through
+# bitsandbytes, which needs compute capability 7.5+ (P100 is 6.0).
 name: qwen2vl-2b-lora-cord
 base_model: Qwen/Qwen2-VL-2B-Instruct
 seed: 42

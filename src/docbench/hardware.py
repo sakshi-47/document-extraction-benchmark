@@ -20,6 +20,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 BF16_MIN_COMPUTE_CAPABILITY = (8, 0)
+#: bitsandbytes 4-bit (NF4/FP4) officially targets Turing and newer. Pascal
+#: support has been unofficial and unreliable, which rules out Kaggle's P100
+#: for a QLoRA run even though it has the better memory bandwidth.
+INT4_MIN_COMPUTE_CAPABILITY = (7, 5)
 
 
 @dataclass(frozen=True)
@@ -38,6 +42,13 @@ class Device:
         return "bfloat16" if self.supports_bf16 else "float16"
 
     @property
+    def supports_int4(self) -> bool:
+        """Whether bitsandbytes 4-bit quantization is usable on this device."""
+        if self.kind != "cuda" or self.compute_capability is None:
+            return False
+        return self.compute_capability >= INT4_MIN_COMPUTE_CAPABILITY
+
+    @property
     def needs_grad_scaling(self) -> bool:
         """fp16 training underflows without a gradient scaler; bf16 does not."""
         return self.torch_dtype == "float16"
@@ -49,9 +60,11 @@ class Device:
             if self.compute_capability
             else "unknown"
         )
+        scaling = " with gradient scaling" if self.needs_grad_scaling else ""
+        quant = "4-bit ok" if self.supports_int4 else "no 4-bit"
         return (
             f"{self.name} ({self.kind}, compute {capability}, {memory}) "
-            f"-> {self.torch_dtype}" + (" with gradient scaling" if self.needs_grad_scaling else "")
+            f"-> {self.torch_dtype}{scaling}, {quant}"
         )
 
 

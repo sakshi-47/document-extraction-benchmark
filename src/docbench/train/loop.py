@@ -37,6 +37,22 @@ def resolve_precision(config: RunConfig) -> str:
     return config.precision
 
 
+def check_quantization(config: RunConfig) -> None:
+    """Refuse a 4-bit run on a device whose kernels do not support it.
+
+    Failing here costs seconds. Discovering it after the model download and a
+    partial training run costs a chunk of a weekly GPU allowance.
+    """
+    device = detect_device()
+    if config.load_in_4bit and device.kind == "cuda" and not device.supports_int4:
+        raise ValueError(
+            f"config sets load_in_4bit but {device.name} (compute "
+            f"{device.compute_capability}) is below the bitsandbytes 4-bit "
+            "floor of 7.5. On Kaggle choose the T4 accelerator rather than the "
+            "P100, or set load_in_4bit: false."
+        )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Fine-tune a VLM adapter for field extraction.")
     parser.add_argument("--config", type=Path, required=True)
@@ -46,12 +62,14 @@ def main(argv: list[str] | None = None) -> int:
     config = load_run_config(args.config)
     device = detect_device()
     precision = resolve_precision(config)
+    check_quantization(config)
 
     print(f"run            : {config.name}")
     print(f"base model     : {config.base_model}")
     print(f"device         : {device.describe()}")
     print(f"precision      : {precision}")
     print(f"grad scaling   : {device.needs_grad_scaling}")
+    print(f"4-bit capable  : {device.supports_int4}")
     print(f"effective batch: {config.effective_batch_size}")
     print(f"max steps      : {config.max_steps}")
     print(f"resume         : {args.resume}")

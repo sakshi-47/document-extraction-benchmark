@@ -8,7 +8,7 @@ import yaml
 from docbench.auth import MissingTokenError, Token, get_token
 from docbench.hardware import Device, detect_device
 from docbench.train.config import RunConfig, load_run_config
-from docbench.train.loop import resolve_precision
+from docbench.train.loop import check_quantization, resolve_precision
 
 MINIMAL = {"name": "t", "base_model": "some/model"}
 
@@ -84,6 +84,37 @@ class TestPrecision:
         ampere = Device("cuda", "A100", (8, 0), 40.0, supports_bf16=True)
         assert ampere.torch_dtype == "bfloat16"
         assert not ampere.needs_grad_scaling
+
+    def test_pascal_cannot_run_4bit(self):
+        """P100 is below the bitsandbytes 4-bit floor; QLoRA cannot run on it."""
+        pascal = Device("cuda", "Tesla P100-PCIE-16GB", (6, 0), 16.0, supports_bf16=False)
+        assert not pascal.supports_int4
+        assert "no 4-bit" in pascal.describe()
+
+    def test_turing_can_run_4bit(self):
+        turing = Device("cuda", "Tesla T4", (7, 5), 15.8, supports_bf16=False)
+        assert turing.supports_int4
+        assert turing.torch_dtype == "float16", "Turing has no bf16 either"
+        assert "4-bit ok" in turing.describe()
+
+    def test_cpu_is_never_4bit_capable(self):
+        assert not Device("cpu", "cpu", None, None, False).supports_int4
+
+    def test_4bit_config_on_pascal_fails_before_training(self, monkeypatch):
+        pascal = Device("cuda", "Tesla P100-PCIE-16GB", (6, 0), 16.0, supports_bf16=False)
+        monkeypatch.setattr("docbench.train.loop.detect_device", lambda: pascal)
+        with pytest.raises(ValueError, match="choose the T4"):
+            check_quantization(RunConfig(**MINIMAL, load_in_4bit=True))
+
+    def test_4bit_config_on_turing_is_fine(self, monkeypatch):
+        turing = Device("cuda", "Tesla T4", (7, 5), 15.8, supports_bf16=False)
+        monkeypatch.setattr("docbench.train.loop.detect_device", lambda: turing)
+        check_quantization(RunConfig(**MINIMAL, load_in_4bit=True))
+
+    def test_non_4bit_config_runs_anywhere(self, monkeypatch):
+        pascal = Device("cuda", "Tesla P100-PCIE-16GB", (6, 0), 16.0, supports_bf16=False)
+        monkeypatch.setattr("docbench.train.loop.detect_device", lambda: pascal)
+        check_quantization(RunConfig(**MINIMAL, load_in_4bit=False))
 
     def test_detection_degrades_without_torch(self):
         device = detect_device()
